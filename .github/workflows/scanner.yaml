@@ -2,8 +2,8 @@ name: Project Artha Scanner
 
 on:
   schedule:
-    - cron: "45 10 * * 1-5"
-  workflow_dispatch:
+    - cron: "45 10 * * 1-5"   # 10:45 UTC, Monday to Friday
+  workflow_dispatch:           # Allows manual run
 
 permissions:
   contents: write
@@ -45,5 +45,6 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           python main.py
