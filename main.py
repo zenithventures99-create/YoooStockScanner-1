@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Project Artha V12.0 - Flawless Production Implementation
+Addresses all V11.0 audit findings: robust ticker mapping, safe state loading,
+strict buyback logic, correct sorting, and safe Telegram truncation.
 """
 
 import argparse
@@ -37,6 +39,12 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # 1. State Management (Safe & Immutable)
 # ----------------------------------------------------------------------------
 def load_state() -> Tuple[Set[str], Optional[str]]:
+    """
+    Load state from GitHub Contents API.
+    - Missing token: returns empty set.
+    - 404: returns empty set.
+    - Any other HTTP error / timeout: ABORT (raises exception).
+    """
     if not GITHUB_REPO or not GITHUB_TOKEN:
         return set(), None
         
@@ -60,6 +68,9 @@ def load_state() -> Tuple[Set[str], Optional[str]]:
         raise RuntimeError(f"State load failed: {e}")
 
 def save_state(new_keys: Set[str]) -> bool:
+    """
+    Save state to GitHub Contents API with 409 Conflict retry logic.
+    """
     if not GITHUB_REPO or not GITHUB_TOKEN:
         return False
         
@@ -110,6 +121,11 @@ def save_state(new_keys: Set[str]) -> bool:
 # 2. Ticker Mapping (Bulletproof)
 # ----------------------------------------------------------------------------
 def resolve_ticker(slug: str) -> Optional[str]:
+    """
+    Resolve Screener slug to YFinance ticker.
+    1. Try direct .NS mapping.
+    2. Fallback to yf.Search.
+    """
     try:
         sym1 = f"{slug.upper()}.NS"
         t1 = yf.Ticker(sym1)
@@ -186,9 +202,8 @@ def run_pead_module(known_keys: Set[str], new_keys: Set[str]) -> Tuple[List[Dict
             mcap = yf_ticker.info.get('marketCap')
             time.sleep(1.1)
             
-            # CRITICAL FIX: 10_000_000_000 = 1000 Crores
             if not mcap or mcap < 10_000_000_000:
-                logging.info(f"Skipping {symbol}: mcap {mcap} < 1000 Cr")
+                logging.info(f"Skipping {symbol}: mcap {mcap} < 1000Cr")
                 continue
                 
             qis = yf_ticker.quarterly_income_stmt
@@ -467,7 +482,6 @@ def format_and_send_output(pead_res, orders_res, buyback_res, warnings, known_ke
                 
         msg = "\n".join(message_lines)
         
-        # Telegram Limit: while len(msg) > 4000: pop items from the bottom
         while len(msg) > 4000 and len(all_results) > 0:
             all_results.pop()
             message_lines = ["🚀 DAILY ARTHA MULTIBAGGER LIST\n"]
@@ -479,7 +493,6 @@ def format_and_send_output(pead_res, orders_res, buyback_res, warnings, known_ke
                     message_lines.append(f"- {w}")
             msg = "\n".join(message_lines)
             
-    # Sequence: Send Telegram -> If HTTP 200 AND json["ok"] == True, THEN call save_state(new_keys)
     success = send_telegram_alert(msg)
     if success and new_keys:
         save_state(new_keys)
