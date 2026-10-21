@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Project Artha V12.0 - Flawless Production Implementation
-Addresses all V11.0 audit findings: robust ticker mapping, safe state loading,
-strict buyback logic, correct sorting, and safe Telegram truncation.
+Project Artha V13.0 - The Final Multibagger Engine
+Integrated with curl_cffi to bypass Cloudflare/Akamai blocks.
 """
 
 import argparse
@@ -22,11 +21,12 @@ import pandas as pd
 import requests
 import yfinance as yf
 from bs4 import BeautifulSoup
+from curl_cffi import requests as curl_requests  # <--- THE BYPASS
 
 # ----------------------------------------------------------------------------
 # Configuration & Constants
 # ----------------------------------------------------------------------------
-TIMEOUT = 10
+TIMEOUT = 15  # Slightly increased to handle NSE's slow response times
 STATE_FILE = "project-artha-state.json"
 GITHUB_REPO = os.getenv("GITHUB_REPOSITORY", "")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
@@ -39,12 +39,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # 1. State Management (Safe & Immutable)
 # ----------------------------------------------------------------------------
 def load_state() -> Tuple[Set[str], Optional[str]]:
-    """
-    Load state from GitHub Contents API.
-    - Missing token: returns empty set.
-    - 404: returns empty set.
-    - Any other HTTP error / timeout: ABORT (raises exception).
-    """
     if not GITHUB_REPO or not GITHUB_TOKEN:
         return set(), None
         
@@ -68,9 +62,6 @@ def load_state() -> Tuple[Set[str], Optional[str]]:
         raise RuntimeError(f"State load failed: {e}")
 
 def save_state(new_keys: Set[str]) -> bool:
-    """
-    Save state to GitHub Contents API with 409 Conflict retry logic.
-    """
     if not GITHUB_REPO or not GITHUB_TOKEN:
         return False
         
@@ -121,11 +112,6 @@ def save_state(new_keys: Set[str]) -> bool:
 # 2. Ticker Mapping (Bulletproof)
 # ----------------------------------------------------------------------------
 def resolve_ticker(slug: str) -> Optional[str]:
-    """
-    Resolve Screener slug to YFinance ticker.
-    1. Try direct .NS mapping.
-    2. Fallback to yf.Search.
-    """
     try:
         sym1 = f"{slug.upper()}.NS"
         t1 = yf.Ticker(sym1)
@@ -156,7 +142,8 @@ def run_pead_module(known_keys: Set[str], new_keys: Set[str]) -> Tuple[List[Dict
     url = "https://www.screener.in/results/latest/"
     
     try:
-        resp = requests.get(url, timeout=TIMEOUT)
+        # USING CURL_CFFI TO BYPASS CLOUDFLARE
+        resp = curl_requests.get(url, timeout=TIMEOUT, impersonate="chrome110")
         time.sleep(1.1)
         resp.raise_for_status()
     except Exception as e:
@@ -202,8 +189,9 @@ def run_pead_module(known_keys: Set[str], new_keys: Set[str]) -> Tuple[List[Dict
             mcap = yf_ticker.info.get('marketCap')
             time.sleep(1.1)
             
+            # ₹1000 Crore Filter
             if not mcap or mcap < 10_000_000_000:
-                logging.info(f"Skipping {symbol}: mcap {mcap} < 1000Cr")
+                logging.info(f"Skipping {symbol}: mcap {mcap} < 1000 Cr")
                 continue
                 
             qis = yf_ticker.quarterly_income_stmt
@@ -275,9 +263,10 @@ def run_pead_module(known_keys: Set[str], new_keys: Set[str]) -> Tuple[List[Dict
 def run_big_orders_module(known_keys: Set[str], new_keys: Set[str]) -> Tuple[List[Dict[str, Any]], List[str]]:
     results = []
     warnings = []
-    session = requests.Session()
     
     try:
+        # USING CURL_CFFI TO BYPASS AKAMAI
+        session = curl_requests.Session(impersonate="chrome110")
         session.get("https://www.nseindia.com/", timeout=TIMEOUT)
         time.sleep(1.1)
         
@@ -358,7 +347,8 @@ def run_buyback_module(known_keys: Set[str], new_keys: Set[str]) -> Tuple[List[D
     url = "https://www.screener.in/screens/139/buybacks/"
     
     try:
-        resp = requests.get(url, timeout=TIMEOUT)
+        # USING CURL_CFFI TO BYPASS CLOUDFLARE
+        resp = curl_requests.get(url, timeout=TIMEOUT, impersonate="chrome110")
         time.sleep(1.1)
         resp.raise_for_status()
     except Exception as e:
@@ -503,7 +493,7 @@ def format_and_send_output(pead_res, orders_res, buyback_res, warnings, known_ke
 # Main Execution
 # ----------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Project Artha V12.0 Scanner")
+    parser = argparse.ArgumentParser(description="Project Artha V13.0 Scanner")
     parser.add_argument("--self-test", action="store_true", help="Run offline self-tests and exit")
     args = parser.parse_args()
 
@@ -512,7 +502,7 @@ def main():
         unittest.main(module=__name__, exit=False, verbosity=2)
         return
 
-    logging.info("Starting Project Artha V12.0 Scan...")
+    logging.info("Starting Project Artha V13.0 Scan...")
     
     try:
         known_keys, current_sha = load_state()
@@ -536,9 +526,9 @@ def main():
     logging.info("Scan completed.")
 
 # ----------------------------------------------------------------------------
-# 8. Offline Self-Tests
+# Offline Self-Tests
 # ----------------------------------------------------------------------------
-class TestProjectArthaV12(unittest.TestCase):
+class TestProjectArthaV13(unittest.TestCase):
     
     @mock.patch('yfinance.Search')
     @mock.patch('yfinance.Ticker')
