@@ -1,0 +1,14 @@
+{
+  "environment": "NON_PRODUCTION",
+  "decisions": {
+    "OD-1": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-2": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-3": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-4": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-5": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-6": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-7": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-8": {"status": "UNRESOLVED", "value": null, "approval_reference": null},
+    "OD-9": {"status": "UNRESOLVED", "value": null, "approval_reference": null}
+  }
+}
