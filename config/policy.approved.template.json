@@ -1,0 +1,50 @@
+{
+  "environment": "NON_PRODUCTION",
+  "decisions": {
+    "OD-1": {
+      "status": "UNRESOLVED",
+      "value": "BOTH_TRIGGERS",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-2": {
+      "status": "UNRESOLVED",
+      "value": "INCLUSIVE_GE",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-3": {
+      "status": "UNRESOLVED",
+      "value": "SIMPLIFIED_FOUR_TIERS",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-4": {
+      "status": "UNRESOLVED",
+      "value": "CONSOLIDATED_PAT",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-5": {
+      "status": "UNRESOLVED",
+      "value": "FORCE_REVIEW",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-6": {
+      "status": "UNRESOLVED",
+      "value": "REVENUE_FROM_OPERATIONS_QUARANTINE_FINANCIAL",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-7": {
+      "status": "UNRESOLVED",
+      "value": "AUDITED_FY",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-8": {
+      "status": "UNRESOLVED",
+      "value": "HEADLINE_TOTAL_TAX_AS_DISCLOSED_INR_ONLY",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    },
+    "OD-9": {
+      "status": "UNRESOLVED",
+      "value": "FIRM_AWARD_ONLY",
+      "approval_reference": "<<OWNER MUST SUPPLY>>"
+    }
+  }
+}
