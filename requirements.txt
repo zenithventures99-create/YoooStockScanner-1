@@ -1,0 +1,6 @@
+# Runtime – keep minimal. Core uses stdlib only.
+# Acquisition packages (added only after probe succeeds)
+curl_cffi>=0.7.0
+pypdf==5.1.0
+pdfplumber>=0.11.0
+yfinance==0.2.54
