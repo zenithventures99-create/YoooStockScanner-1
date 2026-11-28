@@ -1,0 +1,29 @@
+name: Project Artha CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # schedule:
+  #   - cron: "45 10 * * 1-5" # DISABLED. Production runs on the dedicated VM.
+                              # GitHub cron has unbounded queue delays unacceptable for real-time alerts.
+
+jobs:
+  selfcheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pypdf==5.1.0 yfinance==0.2.54
+      - run: python -c "import artha; print(artha.version)"
+
+  offline-tests:
+    runs-on: ubuntu-24.04
+    needs: selfcheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pypdf==5.1.0 yfinance==0.2.54 pytest==8.3.4
+      - run: pytest tests/test_core.py -v --tb=short
